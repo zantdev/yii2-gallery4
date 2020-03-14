@@ -1,0 +1,21 @@
+{
+    "name": "zantknight/yii2-gallery4",
+    "description": "Gallery manager for bootstrap4",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ehsan Basri",
+            "email": "zantknight.dev@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "~2.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "zantknight\\gallery\\": ""
+        }
+    }
+}
