@@ -1,6 +1,6 @@
 <?php
 
-namespace zantknight\gallery;
+namespace zantknight\yii2\gallery4;
 
 /**
  * This is just an example.
