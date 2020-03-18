@@ -28,4 +28,4 @@ Usage
 Once the extension is installed, simply use it in your code by  :
 
 ```php
-<?= \zantknight\gallery\AutoloadExample::widget(); ?>```
+<?= \zantknight\yii\gallery\AutoloadExample::widget(); ?>```
