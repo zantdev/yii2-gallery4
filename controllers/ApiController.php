@@ -32,6 +32,7 @@ class ApiController extends Controller
                 $gallery->model = $_POST['model'];
             }
             $gallery->name = $gallery->generateName(32);
+            $gallery->title = $gallery->fileInput->name;
             if ($gallery->upload()) {
                 $fileUrl = Url::to("@web/media/$gallery->name.$gallery->ext", true);
                 $preview[] = $fileUrl;

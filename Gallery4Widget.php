@@ -24,20 +24,9 @@ class Gallery4Widget extends Widget {
                 $this->ownerModel::className()
             ));
         }
-
-
-        if ($this->config === null) {
-            $name = $this->path;
-            $this->config = [
-                'name' => $name.'[]',
-                'options'=>[
-                    'multiple'=>true
-                ],
-                'pluginOptions' => [
-                    'uploadUrl' => Url::to(["gallery4/api/upload"]),
-                    'maxFileCount' => 10
-                ]
-            ];
+        if (!$this->ownerModel->isNewRecord) {
+            $this->config['pluginOptions']['initialPreview'] = 
+                $this->getInitialPreview();
         }
 
         $this->config['pluginOptions']['uploadUrl'] = Url::to([
@@ -63,6 +52,23 @@ class Gallery4Widget extends Widget {
             'config' => $this->config,
             'fieldName' => $this->fieldName
         ]);
+    }
+
+    private function getInitialPreview() {
+        $gallery = Gallery4::find()->where([
+            'model' => StringHelper::basename($this->ownerModel::className()),
+            'owner_id' => $this->ownerModel->id
+        ])->one();
+
+        if ($gallery) {
+            return [
+                "<img class='w-100' src='".
+                    Url::to("@web/media/$gallery->name.$gallery->ext", true)
+                ."' />"
+            ];
+        }else {
+            return [];
+        }
     }
 }
 ?>

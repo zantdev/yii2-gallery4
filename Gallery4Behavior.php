@@ -9,7 +9,6 @@ use zantknight\yii\gallery\models\Gallery4;
 
 class Gallery4Behavior extends Behavior 
 {   
-    public $modelName = null;
     public $model = null;
     public function events()
     {
@@ -26,7 +25,7 @@ class Gallery4Behavior extends Behavior
             foreach($galleryKeys as $keyValue) {
                 if ($keyValue != "") {
                     $gallery = Gallery4::findOne($keyValue);
-                    $gallery->owner_id = $this->model->id;
+                    $gallery->owner_id = $this->model->primaryKey();
                     $gallery->save();
                 }
             }
