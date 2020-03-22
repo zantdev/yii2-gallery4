@@ -9,7 +9,7 @@ use Yii;
  *
  * @property int $id
  * @property string|null $model
- * @property integer|-1 $owner_id
+ * @property string|null $owner_id
  * @property string|null $name
  * @property string|null $file
  * @property string|null $title
@@ -35,10 +35,9 @@ class Gallery4 extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description'], 'string'],
+            [['description', 'owner_id'], 'string'],
             [['model', 'title', 'name'], 'string', 'max' => 100],
             [['file'], 'string', 'max' => 255],
-            [['owner_id'], 'integer'],
             [['type'], 'string', 'max' => 50],
             [['ext'], 'string', 'max' => 10],
             [['fileInput'], 'file', 'skipOnEmpty' => true],

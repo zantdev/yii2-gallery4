@@ -1,0 +1,13 @@
+.nav {
+  &.nav-pills {
+    .nav-item {
+      .nav-link {
+        color: $primary_core;
+        &.active {
+          background-color: $primary_core;
+          color: $white;
+        }
+      }
+    }
+  }
+}
