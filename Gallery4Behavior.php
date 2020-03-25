@@ -4,8 +4,11 @@ namespace zantknight\yii\gallery;
 use Yii;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
+use yii\helpers\StringHelper;
+
 
 use zantknight\yii\gallery\models\Gallery4;
+use zantknight\yii\gallery\models\GalleryOwner;
 
 class Gallery4Behavior extends Behavior 
 {   
@@ -22,13 +25,48 @@ class Gallery4Behavior extends Behavior
     public function updateOwnerModel($event) 
     {
         $gallery4Ids = Yii::$app->request->post('gallery4Id');
+        $gallery4Multiple = Yii::$app->request->post('gallery4Multiple');
+        
         if ($gallery4Ids) {
             $galleryKeys = explode(":", $gallery4Ids);
-            foreach($galleryKeys as $keyValue) {
+            foreach ($galleryKeys as $keyValue) {
                 if ($keyValue != "") {
-                    $gallery = Gallery4::findOne($keyValue);
-                    $gallery->owner_id = strval($this->model->primaryKey);
-                    $gallery->save();                    
+                    if ($gallery4Multiple) {
+                        $galleryOwner = GalleryOwner::find()->where([
+                            'gallery_id' => $keyValue
+                        ])->one();
+                        $galleryOwner->owner_id = 
+                            strval($this->model->primaryKey);
+                        $galleryOwner->save();
+                    }else {
+                        $delGalOwner = GalleryOwner::find()->where([
+                            'model' => StringHelper::basename(
+                                $this->model::className()
+                            ),
+                            'owner_id' => strval($this->model->primaryKey)
+                        ])->one();
+                        if ($delGalOwner) {
+                            $galleryOwner = new GalleryOwner();
+                            $galleryOwner->gallery_id = $keyValue;
+                            $galleryOwner->model = StringHelper::basename(
+                                $this->model::className()
+                            );
+                            $galleryOwner->owner_id = strval($this->model->primaryKey);
+                            $galleryOwner->created_at = date('Y-m-d H:i:s');
+                            if ($galleryOwner->save()) {
+                                $delGalOwner->delete();
+                            }
+                        }else {
+                            $galleryOwner = new GalleryOwner();
+                            $galleryOwner->gallery_id = $keyValue;
+                            $galleryOwner->model = StringHelper::basename(
+                                $this->model::className()
+                            );
+                            $galleryOwner->owner_id = strval($this->model->primaryKey);
+                            $galleryOwner->created_at = date('Y-m-d H:i:s');
+                            $galleryOwner->save();
+                        }
+                    }                    
                 }
             }
         }

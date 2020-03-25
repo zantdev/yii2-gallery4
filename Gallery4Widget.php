@@ -6,13 +6,14 @@ use yii\base\Widget;
 use yii\helpers\Url;
 use yii\helpers\StringHelper;
 use zantknight\yii\gallery\models\Gallery4;
+use zantknight\yii\gallery\models\GalleryOwner;
 
 class Gallery4Widget extends Widget {
     public $config;
     public $model;
     public $ownerModel;
-    public $fieldName;
     public $path;
+    public $multiple;
 
     public function init() {
         parent::init();
@@ -24,22 +25,38 @@ class Gallery4Widget extends Widget {
                 $this->ownerModel::className()
             ));
         }
+        
+
+        $this->config = [
+            'options' => [
+                'accept' => 'image/*',
+            ],
+            'pluginOptions' => [
+                'uploadUrl' => Url::to(["gallery4/api/upload"]),
+                'uploadAsync' => false,
+                'maxFileCount' => 1,
+                'showCancel' => false,
+                'showRemove' => false,
+                'uploadExtraData' => [
+                    'model' => StringHelper::basename(
+                        $this->ownerModel::className()
+                    )
+                ]
+            ],
+            'model' => new Gallery4(),
+            'attribute' => 'fileInput'
+        ];
+
         if (!$this->ownerModel->isNewRecord) {
-            $this->config['pluginOptions']['initialPreview'] = 
-                $this->getInitialPreview();
+            $this->config['pluginOptions']['preview'] = 
+                $this->getPreview();
         }
 
-        $this->config['pluginOptions']['uploadUrl'] = Url::to([
-            "gallery4/api/upload"
-        ]);
-        $this->config['pluginOptions']['uploadAsync'] = false;
-        $this->config['pluginOptions']['uploadExtraData']['model'] = 
-            StringHelper::basename($this->ownerModel::className());
-
-        $this->config = array_merge([
-            'model' => new Gallery4(),
-            'attribute' => 'fileInput',
-        ], $this->config);
+        if (!$this->multiple) {
+            $this->multiple = 0;
+        }else {
+            $this->multiple = 1;
+        }
     }
 
     /**
@@ -50,25 +67,40 @@ class Gallery4Widget extends Widget {
         return $this->render('myWidget', [
             'ownerModel' => $this->ownerModel,
             'config' => $this->config,
-            'fieldName' => $this->fieldName
+            'multiple' => $this->multiple
         ]);
     }
 
-    private function getInitialPreview() {
-        $gallery = Gallery4::find()->where([
+    private function getPreview() {
+        $ret = [];
+        $strGalId = "";
+        $galleryOwner = GalleryOwner::find()->where([
             'model' => StringHelper::basename($this->ownerModel::className()),
             'owner_id' => $this->ownerModel->id
-        ])->one();
+        ])->all();
 
-        if ($gallery) {
-            return [
-                "<img class='w-100' src='".
-                    Url::to("@web/media/$gallery->name.$gallery->ext", true)
-                ."' />"
-            ];
-        }else {
-            return [];
+        if ($galleryOwner) {
+            foreach ($galleryOwner as $go) {
+                $gallery = Gallery4::findOne($go->gallery_id);
+                if ($gallery) {
+                    $fileUrl = Url::to(
+                        "@web/media/$gallery->name.$gallery->ext", 
+                        true
+                    );
+                    $ret['data'][] = [
+                        'id' => $gallery->id,
+                        'title' => $gallery->title,
+                        'file_size' => $gallery->file_size,
+                        'url' => $fileUrl
+                    ];
+                    $strGalId = $strGalId.":$gallery->id";
+                }
+            }
         }
+
+        $ret['str_gal_id'] = $strGalId;
+        
+        return $ret;
     }
 }
 ?>

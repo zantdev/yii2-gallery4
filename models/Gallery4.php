@@ -8,10 +8,8 @@ use Yii;
  * This is the model class for table "gallery_4".
  *
  * @property int $id
- * @property string|null $model
- * @property string|null $owner_id
  * @property string|null $name
- * @property string|null $file
+ * @property int|null $file_size
  * @property string|null $title
  * @property string|null $type
  * @property string|null $ext
@@ -35,9 +33,9 @@ class Gallery4 extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description', 'owner_id'], 'string'],
-            [['model', 'title', 'name'], 'string', 'max' => 100],
-            [['file'], 'string', 'max' => 255],
+            [['description'], 'string'],
+            [['title', 'name'], 'string', 'max' => 100],
+            [['file_size'], 'integer'],
             [['type'], 'string', 'max' => 50],
             [['ext'], 'string', 'max' => 10],
             [['fileInput'], 'file', 'skipOnEmpty' => true],
@@ -74,10 +72,8 @@ class Gallery4 extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('app', 'ID'),
-            'model' => Yii::t('app', 'Model'),
-            'owner_id' => Yii::t('app', 'Owner ID'),
             'name' => Yii::t('app', 'Name'),
-            'file' => Yii::t('app', 'File'),
+            'file_size' => Yii::t('app', 'File Size'),
             'title' => Yii::t('app', 'Title'),
             'type' => Yii::t('app', 'Type'),
             'ext' => Yii::t('app', 'Ext'),

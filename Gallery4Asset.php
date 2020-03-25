@@ -20,7 +20,6 @@ class Gallery4Asset extends AssetBundle
         'yii\web\JqueryAsset',
         'yii\bootstrap4\BootstrapAsset',
     ];
-
 }
 
 ?>

@@ -16,7 +16,7 @@
   display: flex;
 }
 .file-list-container .content .item {
-  width: 215px;
+  width: 315px;
   height: 100%;
   padding: 10px;
   background: #FFFFFF;
@@ -101,6 +101,10 @@
 .image-pagination .prev a, .image-pagination .next a {
   text-decoration: none;
   color: #20a8d8;
+}
+
+.upload-container .insert-document {
+  margin-top: 20px;
 }
 
 /*# sourceMappingURL=main.css.map */
