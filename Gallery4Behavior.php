@@ -35,9 +35,21 @@ class Gallery4Behavior extends Behavior
                         $galleryOwner = GalleryOwner::find()->where([
                             'gallery_id' => $keyValue
                         ])->one();
-                        $galleryOwner->owner_id = 
-                            strval($this->model->primaryKey);
-                        $galleryOwner->save();
+                        if ($galleryOwner) {
+                            $galleryOwner->owner_id = 
+                                strval($this->model->primaryKey);
+                            $galleryOwner->save();
+                        }else {
+                            $galleryOwner = new GalleryOwner();
+                            $galleryOwner->gallery_id = intval($keyValue);
+                            $galleryOwner->model = StringHelper::basename(
+                                $this->model::className()
+                            );
+                            $galleryOwner->owner_id = 
+                                strval($this->model->primaryKey);
+                            $galleryOwner->created_at = date('Y-m-d H:i:s');
+                            $galleryOwner->save();
+                        }
                     }else {
                         $delGalOwner = GalleryOwner::find()->where([
                             'model' => StringHelper::basename(
@@ -51,7 +63,8 @@ class Gallery4Behavior extends Behavior
                             $galleryOwner->model = StringHelper::basename(
                                 $this->model::className()
                             );
-                            $galleryOwner->owner_id = strval($this->model->primaryKey);
+                            $galleryOwner->owner_id = 
+                                strval($this->model->primaryKey);
                             $galleryOwner->created_at = date('Y-m-d H:i:s');
                             if ($galleryOwner->save()) {
                                 $delGalOwner->delete();
