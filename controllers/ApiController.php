@@ -2,6 +2,7 @@
 namespace zantknight\yii\gallery\controllers;
 
 use Yii;
+use yii\helpers\FileHelper;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\helpers\Url;
@@ -73,7 +74,6 @@ class ApiController extends Controller
 
     public function actionFilterImage($q, $page, $limit) {
         \Yii::$app->response->format = Response::FORMAT_JSON;
-        $arrQ = [];
         $ret = [];
         $galCount = 0;
         $next = false;
@@ -85,7 +85,8 @@ class ApiController extends Controller
                 ['ilike', 'title', $q])->orderBy(
                 ['created_at' => SORT_DESC])
                 ->limit($limit)->offset($offset)->all();
-            $galCount = Gallery4::find()->where($arrQ)->count();
+            $galCount = Gallery4::find()->where(
+                ['ilike', 'title', $q])->count();
         }else {
             $galleries = Gallery4::find()->orderBy([
                 'created_at' => SORT_DESC
@@ -98,13 +99,14 @@ class ApiController extends Controller
             $ret['data'][] = [
                 'id' => $gal->id,
                 'title' => $gal->title,
+                'description' => ($gal->description ? $gal->description : ""),
                 'file_size' => $gal->file_size,
                 'url' => Url::to("@web/media/$gal->name.$gal->ext", true),
                 'url_download' => Url::to("@web/media/$gal->name.$gal->ext", true),
             ];
         }
 
-        if ($limit < $galCount) {
+        if ($limit*$page < $galCount) {
             $next = true;
         }else {
             $next = false;
@@ -137,7 +139,9 @@ class ApiController extends Controller
             foreach ($galleryOwner as $go) {
                 $gallery = Gallery4::findOne($go->gallery_id);
                 if ($gallery) {
-                    $fileUrl = Url::to("@web/media/$gallery->name.$gallery->ext", true);
+                    $fileUrl = Url::to(
+                        "@web/media/$gallery->name.$gallery->ext", true
+                    );
                     $ret[] = [
                         'id' => $gallery->id,
                         'title' => $gallery->title,
@@ -145,6 +149,78 @@ class ApiController extends Controller
                         'url' => $fileUrl
                     ];
                 } 
+            }
+        }
+
+        return $ret;
+    }
+
+    public function actionDeleteFile() {
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        if (Yii::$app->request->isPost) {
+            $id = Yii::$app->request->post('galId');
+            $model = Yii::$app->request->post('model');
+            $gallery = Gallery4::findOne($id);
+            if ($gallery) {
+                if (GalleryOwner::deleteAll([
+                    'gallery_id' => $id, 
+                    'model' => $model
+                ])) {
+                    return [
+                        'success' => true
+                    ];
+                }
+            }
+        }
+    }
+
+    public function actionDeletePersistent() {
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        $ret = [
+            'success' => false
+        ];
+
+        if (Yii::$app->request->isPost) {
+            $id = Yii::$app->request->post('id');
+            $gallery = Gallery4::findOne($id);
+            if ($gallery) {
+                $filePath = Yii::$app->basePath."/web/media/".
+                    $gallery->name.".".$gallery->ext;
+                if (FileHelper::unlink($filePath)) {
+                    if (GalleryOwner::deleteAll([
+                        'gallery_id' => $id
+                    ])) {
+                        if ($gallery->delete()) {
+                            $ret = [
+                                'success' => true
+                            ];
+                        }
+                    }    
+                }
+            }
+        }
+
+        return $ret;
+    }
+
+    public function actionSaveData() {
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        $ret = [
+            'success' => false
+        ];
+        if (Yii::$app->request->isPost) {
+            $id = Yii::$app->request->post('id');
+            $title = Yii::$app->request->post('title');
+            $description = Yii::$app->request->post('description');
+            $gallery = Gallery4::findOne($id);
+            if ($gallery) {
+                $gallery->title = $title;
+                $gallery->description = $description;
+                if ($gallery->save()) {
+                    $ret = [
+                        'success' => true
+                    ];
+                }
             }
         }
 

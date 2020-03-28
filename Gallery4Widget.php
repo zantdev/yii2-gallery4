@@ -89,6 +89,7 @@ class Gallery4Widget extends Widget {
                     );
                     $ret['data'][] = [
                         'id' => $gallery->id,
+                        'model' => $go->model,
                         'title' => $gallery->title,
                         'file_size' => $gallery->file_size,
                         'url' => $fileUrl

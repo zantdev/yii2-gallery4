@@ -46,7 +46,7 @@ use kartik\file\FileInput;
               <a href="#" class="btn-prev">< Prev</a>
             </div>
             <div class="page-info">
-              Page 1 of 2
+              Page 1 of 1
             </div>
             <div class="next">
               <a href="#" class="btn-next">Next ></a>
@@ -115,33 +115,97 @@ $this->registerJs("
       $('#gallery4Id').val(strGallery);
     });
   }
+  function invokeDeletableItem() {
+    $('.action-delete').on('click', function(e){
+      var isNewRecord = ".($ownerModel->isNewRecord ? 1 : 0).";
+      var id = $(this).attr('data-galId');
+      var model = $(this).attr('data-model');
+      var res = confirm('Are you sure deleting this item?');
+      if (res) {
+        strIds = $('#gallery4Id').val().replace(`:\${id}`, '');
+        $('#gallery4Id').val(strIds)
+         
+        if (isNewRecord === 1) {    
+          $(`.item-\${id}`).fadeOut('normal', function(){
+            $(this).remove();
+            setTimeout(function(){
+              if ($('#content-gallery4 .item').length == 0) {
+                var tpl = `
+                  <div class='no-file-wrapper'>
+                    <div class='no-file'>
+                      <img class='image-icon' src='".$bundle->baseUrl."/images/secret-file.png' />
+                      <div class='caption'>No File Selected</div>
+                    </div>
+                  </div>
+                `;
+                $('#content-gallery4').append(tpl);
+              }
+            }, 100);
+          });
+        }else {
+          $.ajax({
+            type: 'POST',
+            url: '".Url::to(["gallery4/api/delete-file"])."',
+            data: {
+              galId: id,
+              model: model,
+            },
+            success: function(data){
+              if (data.success) {
+                $(`.item-\${id}`).fadeOut('normal', function(){
+                  $(this).remove();
+                  setTimeout(function(){
+                    if ($('#content-gallery4 .item').length == 0) {
+                      var tpl = `
+                        <div class='no-file-wrapper'>
+                          <div class='no-file'>
+                            <img class='image-icon' src='".$bundle->baseUrl."/images/secret-file.png' />
+                            <div class='caption'>No File Selected</div>
+                          </div>
+                        </div>
+                      `;
+                      $('#content-gallery4').append(tpl);
+                    }
+                  }, 100);
+                });  
+              }
+            }
+          });
+        }
+      }
+    });
+  }
   function addFile(data, multiple) {
     var tpl = `
-      <div class='item'>
+      <div class='item item-\${data.id}'>
         <a data-lightbox='\${data.id}' data-title='\${data.title}' href='\${data.url}'>
           <img class='preview' src='\${data.url}'>
         </a>
-        <div class='file-name'>\${data.title}</div>
-        <div class='info-container'>
-          <div class='file-size'>\${data.size}</div>
-          <div class='file-action'>
-            <a class='action-wrapper action-download' href='\${data.url_download}'>
-              <i class='c-icon cil-cloud-download'></i>
-            </a>
-            <a class='action-wrapper action-delete' href='#'>
-              <i class='c-icon cil-trash'></i>
-            </a>
+        <div class='body-container'>
+          <div class='file-name'>\${data.title}</div>  
+          <div class='info-container'>
+            <div class='file-size'>\${data.size}</div>
+            <div class='file-action'>
+              <a class='action-wrapper action-download' href='\${data.url_download}'>
+                <i class='c-icon cil-cloud-download'></i>
+              </a>
+              <a class='action-wrapper action-delete' data-galId='\${data.id}' href='#'>
+                <i class='c-icon cil-trash'></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     `;
     if (multiple === 1) {
+      $('.no-file-wrapper').remove();
       $('#content-gallery4').append(tpl);
     }else {
       $('#content-gallery4 *').remove();
       $('#content-gallery4').append(tpl);
     }
     $('#modalChooserGallery4').modal('hide');
+    invokeDeletableItem();
   }
 
   function loadImageSelection(q, page, limit) {
@@ -237,6 +301,11 @@ $this->registerJs("
       url: url,
       url_download: url,
     }, multiple);
+    var galleryId = id;
+    var strGallery = $('#gallery4Id').val();
+    strGallery = `\${strGallery}:\${galleryId}`;
+    $('#gallery4-fileinput').fileinput('refresh');
+    $('#btn-insert').hide();
   });
 
   $('#btn-add-change').on('click', function(e){
@@ -244,6 +313,7 @@ $this->registerJs("
     $('#txt-image-search').val('');
     loadImageSelection('', page, limit);
   });
+  invokeDeletableItem();
 ",
 View::POS_READY,
 'chooser-image');

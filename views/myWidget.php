@@ -1,80 +1,40 @@
 <?php 
 use yii\web\View;
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 use zantknight\yii\gallery\Gallery4Asset;
 
 $bundle = Gallery4Asset::register($this);
 
 ?>
-<!-- <div class="file-list-container">
-    <div class="header">
-        <h3>File</h3>
-    </div>
-    <div class="content">
-        <div class="item">
-            <a data-lightbox="image-1" data-title="Italy" href="http://localhost:8100/media/ARYm6gOZfd8soisZkVZ0XoeWW7BRJ7yE.png">
-                <img class="preview" src="http://localhost:8100/media/ARYm6gOZfd8soisZkVZ0XoeWW7BRJ7yE.png" />
-            </a>
-            <div class="file-name">Italy</div>
-            <div class="info-container">
-                <div class="file-size">220 Kb</div>
-                <div class="file-action">
-                    <a class="action-wrapper action-download" href="#">
-                        <i class="c-icon cil-cloud-download"></i>
-                    </a>
-                    <a class="action-wrapper action-change" href="#">
-                        <i class="c-icon cil-swap-vertical"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="item">
-            <a data-lightbox="image-1" data-title="Italy" href="http://localhost:8100/media/ARYm6gOZfd8soisZkVZ0XoeWW7BRJ7yE.png">
-                <img class="preview" src="http://localhost:8100/media/ARYm6gOZfd8soisZkVZ0XoeWW7BRJ7yE.png" />
-            </a>
-            <div class="file-name">Italy</div>
-            <div class="info-container">
-                <div class="file-size">220 Kb</div>
-                <div class="file-action">
-                    <a class="action-wrapper action-download" href="#">
-                        <i class="c-icon cil-cloud-download"></i>
-                    </a>
-                    <a class="action-wrapper action-change" href="#">
-                        <i class="c-icon cil-swap-vertical"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="footer">
-        <button type="button" class="btn btn-primary"><i class="cil-cloud-upload"></i> Image</button>
-    </div>
-</div> -->
 <div class="file-list-container">
   <div class="header">
     <h3>File</h3>
   </div>
   <div class="content" id="content-gallery4">
     <?php 
-      if (isset($config['pluginOptions']['preview'])) {
+      if (isset($config['pluginOptions']['preview']['data'])) {
         if (sizeof($config['pluginOptions']['preview']['data']) > 0) {
           foreach ($config['pluginOptions']['preview']['data'] as $preview) {
             ?>
-            <div class="item">
+            <div class="item item-<?= $preview['id']?>" data-id="<?= $preview['id']?>">
               <a data-lightbox="image-1" data-title="<?= $preview['title'] ?>" href="<?= $preview['url'] ?>">
                 <img class="preview" src="<?= $preview['url'] ?>" />
               </a>
-              <div class="file-name"><?= $preview['title'] ?></div>
-              <div class="info-container">
-                <div class="file-size"><?= $preview['file_size'] ?></div>
-                <div class="file-action">
-                  <a class="action-wrapper action-download" href="<?= $preview['url'] ?>">
-                    <i class="c-icon cil-cloud-download"></i>
-                  </a>
-                  <a class="action-wrapper action-change" href="#">
-                    <i class="c-icon c-icon cil-trash"></i>
-                  </a>
+              <div class="body-container">
+                <div class="file-name"><?= $preview['title'] ?></div>
+                <div class="info-container">
+                  <div class="file-size"><?= $preview['file_size'] ?></div>
+                  <div class="file-action">
+                    <a class="action-wrapper action-download" href="<?= $preview['url'] ?>">
+                      <i class="c-icon cil-cloud-download"></i>
+                    </a>
+                    <a class="action-wrapper action-delete" data-model="<?= $preview['model'] ?>" 
+                      data-galId="<?= $preview['id']?>" href="#">
+                      <i class="c-icon c-icon cil-trash"></i>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,7 +100,8 @@ $bundle = Gallery4Asset::register($this);
 <?= $this->render('imageChooser', [
   'config'=>$config, 
   'ownerModel' => $ownerModel, 
-  'multiple' => $multiple
+  'multiple' => $multiple,
+  'bundle' => $bundle
 ]); ?>
 
 <?php 
