@@ -63,25 +63,26 @@ Usage
 4. Put this onto your view
    ```php
    <?= \zantknight\yii\gallery\Gallery4Widget::widget([
-        'config' => [
-            'options' => [
-                'accept' => 'image/*',
-                'uploadAsync'=> true,
-                'showUpload'=> false,
-                'showCancel'=> false,
-                'showRemove'=> false,
-                'showClose'=> false,
-            ],
-        ],
         'ownerModel' => $model,
-        'fieldName' => 'flag'
+        'multiple' => true
     ]); ?>
    ```
    **Description**
-   - config
-    Configuration of Kartik yii2-widget-fileinput. You can find [this](https://github.com/kartik-v/yii2-widget-fileinput) for more option
    - ownerModel
      Model class where is used by view 
-   - fieldName
-     field to store gallery image id
-5. Viola
+   - multiple
+     Multiple upload status
+5. Put this chunk in params.php
+   ```php
+    return [
+        ...
+        'bsVersion' => '4.x',
+    ];
+   ```
+6. You will get something like this
+   ![alt text](https://i.postimg.cc/rmLKSSH9/1.png)
+   ![alt text](https://i.postimg.cc/G3DnWWH9/2.png)
+   ![alt text](https://i.postimg.cc/pXYbTKQH/3.png)
+   ![alt text](https://i.postimg.cc/9QJ6PVNg/4.png)
+7. For image administration, go to Module Gallery4 Url (/gallery4/admin) and you will get something like this
+   ![alt text](https://i.postimg.cc/Yqdy4RPQ/5.png)
