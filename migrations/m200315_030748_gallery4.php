@@ -19,6 +19,7 @@ class m200315_030748_gallery4 extends Migration
             'title' => $this->string(100),
             'type' => $this->string('50'),
             'ext' => $this->string('10'),
+            'category' => $this->string('20'),
             'description' => $this->text(),
             'created_at' => $this->dateTime(),
         ]);

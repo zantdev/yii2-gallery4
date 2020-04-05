@@ -38,6 +38,7 @@ class ApiController extends Controller
             }
             $gallery->title = $gallery->fileInput->name;
             $gallery->name = $gallery->generateName(32);
+            $gallery->category = "GALLERY4";
             $gallery->created_at = date('Y-m-d H:i:s');
             $gallery->file_size = $gallery->fileInput->size;
             if ($gallery->upload()) {

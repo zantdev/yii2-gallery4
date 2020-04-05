@@ -2,7 +2,9 @@
 
 namespace zantknight\yii\gallery\models;
 
+
 use Yii;
+use zantknight\yii\gallery\models\GalleryOwner;
 
 /**
  * This is the model class for table "gallery_4".
@@ -12,6 +14,7 @@ use Yii;
  * @property int|null $file_size
  * @property string|null $title
  * @property string|null $type
+ * @property string|null $category
  * @property string|null $ext
  * @property string|null $description
  */
@@ -38,6 +41,7 @@ class Gallery4 extends \yii\db\ActiveRecord
             [['file_size'], 'integer'],
             [['type'], 'string', 'max' => 50],
             [['ext'], 'string', 'max' => 10],
+            [['category'], 'string', 'max' => 20],
             [['fileInput'], 'file', 'skipOnEmpty' => true],
         ];
     }
@@ -76,8 +80,13 @@ class Gallery4 extends \yii\db\ActiveRecord
             'file_size' => Yii::t('app', 'File Size'),
             'title' => Yii::t('app', 'Title'),
             'type' => Yii::t('app', 'Type'),
+            'category' => Yii::t('app', 'Category'),
             'ext' => Yii::t('app', 'Ext'),
             'description' => Yii::t('app', 'Description'),
         ];
+    }
+
+    public function getGo() {
+        return $this->hasMany(GalleryOwner::className(), ['gallery_id' => 'id']);
     }
 }

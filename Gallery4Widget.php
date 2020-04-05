@@ -70,7 +70,7 @@ class Gallery4Widget extends Widget {
             'multiple' => $this->multiple
         ]);
     }
-
+    
     private function getPreview() {
         $ret = [];
         $strGalId = "";
@@ -81,7 +81,10 @@ class Gallery4Widget extends Widget {
 
         if ($galleryOwner) {
             foreach ($galleryOwner as $go) {
-                $gallery = Gallery4::findOne($go->gallery_id);
+                $gallery = Gallery4::find()->where([
+                        'id' => $go->gallery_id,
+                        'category' => 'GALLERY4'
+                    ])->one();
                 if ($gallery) {
                     $fileUrl = Url::to(
                         "@web/media/$gallery->name.$gallery->ext", 
