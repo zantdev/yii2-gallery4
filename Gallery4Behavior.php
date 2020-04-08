@@ -87,8 +87,12 @@ class Gallery4Behavior extends Behavior
 
     public function beforeDeleteOwnerModel($event) 
     {
-        $galleries = Gallery4::find()->where([
-            'owner_id' => $this->model->primaryKey
+        $galleries = Gallery4::find()->joinWith('go')->where([
+            'owner_id' => strval($this->model->primaryKey),
+            'model' => StringHelper::basename(
+                $this->model::className()
+            ),
+            'category' => 'GALLERY4'
         ])->all();
         
         foreach ($galleries as $gallery) {
