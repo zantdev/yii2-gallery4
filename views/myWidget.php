@@ -9,9 +9,6 @@ $bundle = Gallery4Asset::register($this);
 
 ?>
 <div class="file-list-container">
-  <div class="header">
-    <h3>File</h3>
-  </div>
   <div class="content" id="content-gallery4">
     <?php 
       if (isset($config['pluginOptions']['preview']['data'])) {
