@@ -96,8 +96,9 @@ class Gallery4Behavior extends Behavior
         ])->all();
         
         foreach ($galleries as $gallery) {
-            $gallery->owner_id = '';
-            $gallery->save();
+            foreach($gallery->go as $go) {
+                $go->delete();
+            }
         } 
     }
 }
