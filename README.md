@@ -78,11 +78,12 @@ Usage
         ...
         'bsVersion' => '4.x',
     ];
+6. Create folder "media" in your "web" folder 
    ```
-6. You will get something like this
+7. You will get something like this
    ![alt text](https://i.postimg.cc/rmLKSSH9/1.png)
    ![alt text](https://i.postimg.cc/G3DnWWH9/2.png)
    ![alt text](https://i.postimg.cc/pXYbTKQH/3.png)
    ![alt text](https://i.postimg.cc/9QJ6PVNg/4.png)
-7. For image administration, go to Module Gallery4 Url (/gallery4/admin) and you will get something like this
+8. For image administration, go to Module Gallery4 Url (/gallery4/admin) and you will get something like this
    ![alt text](https://i.postimg.cc/Yqdy4RPQ/5.png)
