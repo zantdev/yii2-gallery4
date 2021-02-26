@@ -4,6 +4,8 @@ namespace zantknight\yii\gallery\models;
 
 
 use Yii;
+use yii\helpers\Url;
+use yii\helpers\FileHelper;
 use zantknight\yii\gallery\models\GalleryOwner;
 
 /**
@@ -84,6 +86,112 @@ class Gallery4 extends \yii\db\ActiveRecord
             'ext' => Yii::t('app', 'Ext'),
             'description' => Yii::t('app', 'Description'),
         ];
+    }
+
+    public static function getImagesUrl($objectPk, $modelClass) {
+        $list = [];
+        $galleryOwners = GalleryOwner::find()->joinwith(['gallery'])->where([
+            'owner_id' => $objectPk,
+            'model' => $modelClass
+        ])->all();
+        $protocol = stripos($_SERVER['SERVER_PROTOCOL'],'https') === 0 ? 'https' : 'http';
+        $absoluteHomeUrl = Url::base(true, $protocol);
+
+        foreach ($galleryOwners as $item) {
+            $list[] = $absoluteHomeUrl."/media/".$item->gallery->title;
+        }
+
+        return $list;
+    }
+
+    public static function deleteAllImageByObjPk($objectPk, $modelClass) {
+        $galleryOwner = GalleryOwner::find()->where([
+            'owner_id' => $objectPk,
+            'model' => $modelClass
+        ])->all();
+        $isDeleted = false;
+        $isGODeleted = true;
+        $galleryId = null;
+        foreach ($galleryOwner as $item) {
+            $galleryId = $item->gallery_id;
+            $isGODeleted = $isGODeleted &&$item->delete();
+        }
+        if ($isGODeleted && $galleryId) {
+            $gallery = Gallery4::findOne($galleryId);
+            $filePath = Yii::$app->basePath."/web/media/".
+                    $gallery->name.".".$gallery->ext;
+            if (FileHelper::unlink($filePath)) {
+                if ($gallery->delete()) {
+                    $isDeleted = true;
+                }
+            }
+        }
+
+        return $isDeleted;
+    }
+
+    public static function setImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType) {
+        $galleryOwner = GalleryOwner::find()->where([
+            'owner_id' => $objectPk,
+            'model' => $modelClass
+            ])->one();
+        if ($galleryOwner) {
+            $gallery = Gallery4::findOne($galleryOwner->gallery_id);
+            $fileName = $gallery->name;
+        }else {
+            $gallery = new Gallery4();
+            $fileName = $gallery->generateName(32);
+        }
+
+        $gallery->name = $fileName;
+        $decodedImage = base64_decode($image64);
+        $fileUrl = Yii::$app->basePath."/web/media/$fileName.$imgExt";
+
+        $myfile = fopen($fileUrl, "w");
+        if ($myfile) {
+            fwrite($myfile, $decodedImage);
+            $fileSize = filesize($fileUrl);
+            $gallery->file_size = $fileSize;
+            $gallery->title = $fileName.".".$imgExt;
+            $gallery->type = $imgType;
+            $gallery->ext = $imgExt;
+            $gallery->category = "GALLERY4";
+            $gallery->created_at = date('Y-m-d H:i:s');
+            if ($gallery->save()) {
+                if (!$galleryOwner) {
+                    $galleryOwner = new GalleryOwner();
+                }
+                $galleryOwner->gallery_id = $gallery->primaryKey;
+                $galleryOwner->owner_id = strval($objectPk);
+                $galleryOwner->model = $modelClass;
+                $galleryOwner->created_at = date('Y-m-d H:i:s');
+                if ($galleryOwner->save()) {
+                    $out['data']['id'] = $objectPk;
+                    $out['data']['url'] = 
+                        Url::to('@web/media/'.$gallery->title, true);
+                }else {
+                    $out['success'] = false;
+                    $out['data'] = $galleryOwner->errors;
+                }
+            }
+            fclose($myfile);
+        }
+    }
+
+    public static function getProfileImagePath($objectPk = null, $modelClass = null) {
+        $path = null;
+        $galleryOwner = GalleryOwner::find()->where([
+            'owner_id' => $objectPk,
+            'model' => $modelClass
+            ])->one();
+
+        if ($galleryOwner) {
+            $gallery = Gallery4::findOne($galleryOwner->gallery_id);
+            $fileName = $gallery->name.".".$gallery->ext;
+            $path = Url::to('@web/media/'.$fileName, true); 
+        }
+
+        return $path;
     }
 
     public function getGo() {
