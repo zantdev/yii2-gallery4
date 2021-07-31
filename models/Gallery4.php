@@ -190,11 +190,6 @@ class Gallery4 extends \yii\db\ActiveRecord
                 'model' => $modelClass
                 ])->one();
         }
-        
-        $galleryOwner = GalleryOwner::find()->where([
-            'owner_id' => $objectPk,
-            'model' => $modelClass
-            ])->one();
 
         if ($galleryOwner) {
             $gallery = Gallery4::findOne($galleryOwner->gallery_id);
