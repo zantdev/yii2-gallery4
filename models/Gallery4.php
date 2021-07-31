@@ -180,6 +180,17 @@ class Gallery4 extends \yii\db\ActiveRecord
 
     public static function getProfileImagePath($objectPk = null, $modelClass = null) {
         $path = null;
+        if ($objectPk) {
+            $galleryOwner = GalleryOwner::find()->where([
+                'owner_id' => $objectPk,
+                'model' => $modelClass
+                ])->one();
+        }else {
+            $galleryOwner = GalleryOwner::find()->where([
+                'model' => $modelClass
+                ])->one();
+        }
+        
         $galleryOwner = GalleryOwner::find()->where([
             'owner_id' => $objectPk,
             'model' => $modelClass
