@@ -130,7 +130,7 @@ class Gallery4 extends \yii\db\ActiveRecord
         return $isDeleted;
     }
 
-    public static function setImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType) {
+    public static function setImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType, $category = null) {
         $galleryOwner = GalleryOwner::find()->where([
             'owner_id' => $objectPk,
             'model' => $modelClass
@@ -155,7 +155,11 @@ class Gallery4 extends \yii\db\ActiveRecord
             $gallery->title = $fileName.".".$imgExt;
             $gallery->type = $imgType;
             $gallery->ext = $imgExt;
-            $gallery->category = "GALLERY4";
+            if ($category == null) {
+                $gallery->category = "GALLERY4";
+            }else {
+                $gallery->category = $category;
+            }
             $gallery->created_at = date('Y-m-d H:i:s');
             if ($gallery->save()) {
                 if (!$galleryOwner) {
