@@ -129,6 +129,47 @@ class Gallery4 extends \yii\db\ActiveRecord
 
         return $isDeleted;
     }
+    
+    public static function addImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType, $category = null) {
+        $gallery = new Gallery4();
+        $fileName = $gallery->generateName(32);
+
+        $gallery->name = $fileName;
+        $decodedImage = base64_decode($image64);
+        $fileUrl = Yii::$app->basePath."/web/media/$fileName.$imgExt";
+
+        $myfile = fopen($fileUrl, "w");
+        if ($myfile) {
+            fwrite($myfile, $decodedImage);
+            $fileSize = filesize($fileUrl);
+            $gallery->file_size = $fileSize;
+            $gallery->title = $fileName.".".$imgExt;
+            $gallery->type = $imgType;
+            $gallery->ext = $imgExt;
+            if ($category == null) {
+                $gallery->category = "GALLERY4";
+            }else {
+                $gallery->category = $category;
+            }
+            $gallery->created_at = date('Y-m-d H:i:s');
+            if ($gallery->save()) {
+                $galleryOwner = new GalleryOwner();
+                $galleryOwner->gallery_id = $gallery->primaryKey;
+                $galleryOwner->owner_id = strval($objectPk);
+                $galleryOwner->model = $modelClass;
+                $galleryOwner->created_at = date('Y-m-d H:i:s');
+                if ($galleryOwner->save()) {
+                    $out['data']['id'] = $objectPk;
+                    $out['data']['url'] = 
+                        Url::to('@web/media/'.$gallery->title, true);
+                }else {
+                    $out['success'] = false;
+                    $out['data'] = $galleryOwner->errors;
+                }
+            }
+            fclose($myfile);
+        }
+    }
 
     public static function setImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType, $category = null) {
         $galleryOwner = GalleryOwner::find()->where([
