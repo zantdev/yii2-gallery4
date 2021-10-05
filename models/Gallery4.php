@@ -244,6 +244,39 @@ class Gallery4 extends \yii\db\ActiveRecord
 
         return $path;
     }
+    
+    public static function getImagesPath($objectPk = null, $modelClass = null, $category = null) {
+        $imageList = [];
+        if ($objectPk) {
+            $galleriesOwner = GalleryOwner::find()->where([
+                'owner_id' => $objectPk,
+                'model' => $modelClass
+                ])->all();
+        }else {
+            $galleriesOwner = GalleryOwner::find()->where([
+                'model' => $modelClass
+                ])->all();
+        }
+        
+        foreach ($galleriesOwner as $item) {
+            if ($category) {
+                $gallery = Gallery4::find()->where([
+                    'category' => $category, 'id' => $item->gallery_id])->one();
+                
+            }else {
+                $gallery = Gallery4::find()->where([
+                    'id' => $item->gallery_id])->one();
+            }
+
+            if ($gallery) {
+                $fileName = $gallery->name.".".$gallery->ext;
+                $path = Url::to('@web/media/'.$fileName, true);
+                $imageList[] = $path;
+            }
+        }
+
+        return $imageList;
+    }
 
     public function getGo() {
         return $this->hasMany(GalleryOwner::className(), ['gallery_id' => 'id']);
