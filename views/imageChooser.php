@@ -113,6 +113,8 @@ $this->registerJs("
         strGallery = `\${strGallery}:\${galleryId}`;
       }
       $('#gallery4Id').val(strGallery);
+      $('#modalChooserGallery4').hide();
+      $('.modal-backdrop').remove();
     });
   }
   function invokeDeletableItem() {
@@ -205,6 +207,7 @@ $this->registerJs("
       $('#content-gallery4').append(tpl);
     }
     $('#modalChooserGallery4').modal('hide');
+    $('.modal-backdrop').remove();
     invokeDeletableItem();
   }
 
@@ -305,7 +308,8 @@ $this->registerJs("
     var strGallery = $('#gallery4Id').val();
     strGallery = `\${strGallery}:\${galleryId}`;
     $('#gallery4-fileinput').fileinput('refresh');
-    $('#btn-insert').hide();
+    $('#modalChooserGallery4').hide();
+    $('.modal-backdrop').remove();
   });
 
   $('#btn-add-change').on('click', function(e){
