@@ -8,6 +8,7 @@ namespace zantknight\yii\gallery\models;
  * @property int $id
  * @property int $gallery_id
  * @property string|null $model
+ * @property string|null $category
  * @property string|null $owner_id
  * @property string|null $created_at
  */
@@ -28,7 +29,7 @@ class GalleryOwner extends \yii\db\ActiveRecord
     {
         return [
             [['id', 'gallery_id'], 'integer'],
-            [['owner_id', 'created_at'], 'string'],
+            [['owner_id', 'created_at', 'category'], 'string'],
             [['model'], 'string', 'max' => 100],
         ];
     }

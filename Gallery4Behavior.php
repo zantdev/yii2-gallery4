@@ -92,7 +92,7 @@ class Gallery4Behavior extends Behavior
             'model' => StringHelper::basename(
                 $this->model::className()
             ),
-            'category' => 'GALLERY4'
+            'gallery_4.category' => 'GALLERY4'
         ])->all();
         
         foreach ($galleries as $gallery) {

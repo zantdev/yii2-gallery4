@@ -7,6 +7,7 @@ use Yii;
 use yii\helpers\Url;
 use yii\helpers\FileHelper;
 use zantknight\yii\gallery\models\GalleryOwner;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "gallery_4".
@@ -169,6 +170,62 @@ class Gallery4 extends \yii\db\ActiveRecord
             }
             fclose($myfile);
         }
+    }
+
+    public static function addImageFromAjax($objectPk, $modelClass, $category) {
+        $galleryOwner = GalleryOwner::find()->where([
+            'owner_id' => $objectPk,
+            'model' => $modelClass,
+            'category' => $category
+        ])->one();
+        if ($galleryOwner) {
+            $gallery = Gallery4::findOne($galleryOwner->gallery_id);
+            $fileName = $gallery->name;
+        }else {
+            $gallery = new Gallery4();
+            $fileName = $gallery->generateName(32);
+        }
+
+        $gallery->name = $fileName;
+        $gallery->category = $category;
+        $gallery->fileInput = UploadedFile::getInstance(
+            $gallery,
+            'fileInput'
+        );
+        $gallery->title = $gallery->fileInput->name;
+        $gallery->created_at = date('Y-m-d H:i:s');
+        $gallery->file_size = $gallery->fileInput->size;
+        if ($gallery->upload() && $gallery->validate() && $gallery->save()) {
+            if ($galleryOwner == null) {
+                $galleryOwner = new GalleryOwner();
+            }
+            $galleryOwner->gallery_id = $gallery->id;
+            $galleryOwner->model = $modelClass;
+            $galleryOwner->created_at = date('Y-m-d H:i:s');
+            $galleryOwner->category = $category;
+            $galleryOwner->save();
+            $fileUrl = Url::to("@web/media/$gallery->name.$gallery->ext", true);
+            return [
+                'key' => $gallery->id,
+                'caption' => $gallery->name,
+                'title' => $gallery->title,
+                'size' => $gallery->fileInput->size,
+                'downloadUrl' => $fileUrl,
+            ];
+        }else {
+            echo '<pre>';
+            print_r($gallery);
+            die;
+            return [
+                'success' => false,
+                'message' => 'Upload data is fail'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Non image post is declined!'
+        ];
     }
 
     public static function setImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType, $category = null) {
