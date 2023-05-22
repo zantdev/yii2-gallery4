@@ -8,7 +8,6 @@ use yii\helpers\Url;
 use yii\helpers\FileHelper;
 use zantknight\yii\gallery\models\GalleryOwner;
 use yii\web\UploadedFile;
-use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "gallery_4".
