@@ -8,6 +8,7 @@ use yii\helpers\Url;
 use yii\helpers\FileHelper;
 use zantknight\yii\gallery\models\GalleryOwner;
 use yii\web\UploadedFile;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "gallery_4".
@@ -311,6 +312,11 @@ class Gallery4 extends \yii\db\ActiveRecord
             $gallery->title = $fileName.".".$imgExt;
             $gallery->type = $imgType;
             $gallery->ext = $imgExt;
+            if ($category == null) {
+                $gallery->category = "GALLERY4";
+            }else {
+                $gallery->category = $category;
+            }
             if ($category == null) {
                 $gallery->category = "GALLERY4";
             }else {
