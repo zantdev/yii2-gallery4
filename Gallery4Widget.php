@@ -14,6 +14,8 @@ class Gallery4Widget extends Widget {
     public $ownerModel;
     public $path;
     public $multiple;
+    public $category = null;
+    public $isImageOnly = true;
 
     public function init() {
         parent::init();
@@ -25,14 +27,20 @@ class Gallery4Widget extends Widget {
                 $this->ownerModel::className()
             ));
         }
+        $option = [
+            'accept' => 'image/*',
+        ];
+        if (!$this->isImageOnly) {
+            $option = [
+                // 'accept' => 'image/*',
+            ];
+        }
         
 
         $this->config = [
-            'options' => [
-                'accept' => 'image/*',
-            ],
+            'options' => $option,
             'pluginOptions' => [
-                'uploadUrl' => Url::to(["gallery4/api/upload"]),
+                'uploadUrl' => Url::to(["/gallery4/api/upload"]),
                 'uploadAsync' => false,
                 'maxFileCount' => 1,
                 'showCancel' => false,
@@ -83,17 +91,18 @@ class Gallery4Widget extends Widget {
             foreach ($galleryOwner as $go) {
                 $gallery = Gallery4::find()->where([
                         'id' => $go->gallery_id,
-                        'category' => 'GALLERY4'
+                        'category' => $this->category == null ? 'GALLERY4' : 'CV'
                     ])->one();
                 if ($gallery) {
                     $fileUrl = Url::to(
                         "@web/media/$gallery->name.$gallery->ext", 
-                        true
+                        false
                     );
                     $ret['data'][] = [
                         'id' => $gallery->id,
                         'model' => $go->model,
                         'title' => $gallery->title,
+                        'ext' => $gallery->ext,
                         'file_size' => $gallery->file_size,
                         'url' => $fileUrl
                     ];

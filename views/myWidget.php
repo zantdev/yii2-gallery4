@@ -17,7 +17,19 @@ $bundle = Gallery4Asset::register($this);
             ?>
             <div class="item item-<?= $preview['id']?>" data-id="<?= $preview['id']?>">
               <a data-lightbox="image-1" data-title="<?= $preview['title'] ?>" href="<?= $preview['url'] ?>">
-                <img class="preview" src="<?= $preview['url'] ?>" />
+                <?php 
+                if ($preview['ext'] == 'pdf') {
+                  ?>
+                  <div class='preview'>
+                    <iframe src="<?= $preview['url'] ?>#toolbar=0" width="225px" height="300px">
+                  </div>
+                  <?php
+                }else {
+                  ?>
+                  <img class="preview" src="<?= $preview['url'] ?>" />
+                  <?php
+                }
+                ?>
               </a>
               <div class="body-container">
                 <div class="file-name"><?= $preview['title'] ?></div>

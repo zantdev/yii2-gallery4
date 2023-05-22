@@ -98,6 +98,7 @@ $this->registerJs("
         title: $(this).attr('data-title'),
         size: $(this).attr('data-size'),
         url: $(this).attr('data-url'),
+        ext: $(this).attr('data-ext'),
         url_download: $(this).attr('data-url_download'),
       }, multiple);
       var strGallery = '',
@@ -113,6 +114,8 @@ $this->registerJs("
         strGallery = `\${strGallery}:\${galleryId}`;
       }
       $('#gallery4Id').val(strGallery);
+      $('#modalChooserGallery4').hide();
+      $('.modal-backdrop').remove();
     });
   }
   function invokeDeletableItem() {
@@ -145,7 +148,7 @@ $this->registerJs("
         }else {
           $.ajax({
             type: 'POST',
-            url: '".Url::to(["gallery4/api/delete-file"])."',
+            url: '".Url::to(["/gallery4/api/delete-file"])."',
             data: {
               galId: id,
               model: model,
@@ -176,10 +179,17 @@ $this->registerJs("
     });
   }
   function addFile(data, multiple) {
+    var content = `<img class='preview' src='\${data.url}'>`;
+    if (data.ext == 'pdf') {
+      content = `<div class='preview'>
+      <iframe src='\${data.url_download}#toolbar=0' width='245px' height='300px'>
+      </div>`;
+    }
     var tpl = `
       <div class='item item-\${data.id}'>
         <a data-lightbox='\${data.id}' data-title='\${data.title}' href='\${data.url}'>
-          <img class='preview' src='\${data.url}'>
+
+          \${content}
         </a>
         <div class='body-container'>
           <div class='file-name'>\${data.title}</div>  
@@ -205,12 +215,13 @@ $this->registerJs("
       $('#content-gallery4').append(tpl);
     }
     $('#modalChooserGallery4').modal('hide');
+    $('.modal-backdrop').remove();
     invokeDeletableItem();
   }
 
   function loadImageSelection(q, page, limit) {
     $.ajax({
-      url: '".Url::to(["gallery4/api/filter-image"])."',
+      url: '".Url::to(["/gallery4/api/filter-image"])."',
       data: {
         q: q,
         page: page,
@@ -220,13 +231,28 @@ $this->registerJs("
         var tpl = '';
         if (data.data.length > 0) {
           data.data.forEach(item => {
-            tpl = 
-            `\${tpl}<div class='item-wrapper' data-id='\${item.id}' 
-              data-title='\${item.title}' data-size='\${item.file_size}'
-              data-url='\${item.url}' data-url_download='\${item.url_download}'>
-              <img class='image' src='\${item.url}' />
-              <label>\${item.title}</label>
-            </div>`;
+            console.log('this is extension PDF');
+            console.log(item);
+            if (item.ext == 'pdf') {
+              
+              
+              tpl = 
+                `\${tpl}<div class='item-wrapper' data-id='\${item.id}' 
+                  data-title='\${item.title}' data-size='\${item.file_size}' data-ext='\${item.ext}'
+                  data-url='\${item.url}' data-url_download='\${item.url_download}'>
+                  <iframe src='\${item.url_download}#toolbar=0' width='245px' height='300px'>
+                  <label>\${item.title}</label>
+                </div>`
+            }else {
+              tpl = 
+                `\${tpl}<div class='item-wrapper' data-id='\${item.id}' 
+                  data-title='\${item.title}' data-size='\${item.file_size}' data-ext='\${item.ext}'
+                  data-url='\${item.url}' data-url_download='\${item.url_download}'>
+                  <img class='image' src='\${item.url}' />
+                  <label>\${item.title}</label>
+                </div>`;
+            }
+           
           });
         }else {
           tpl = '<p style=\"text-align: center; width: 100%; margin-top: 20px;\">No Data Found!</p>';
@@ -299,13 +325,15 @@ $this->registerJs("
       title: title,
       size: size,
       url: url,
+      ext: ext,
       url_download: url,
     }, multiple);
     var galleryId = id;
     var strGallery = $('#gallery4Id').val();
     strGallery = `\${strGallery}:\${galleryId}`;
     $('#gallery4-fileinput').fileinput('refresh');
-    $('#btn-insert').hide();
+    $('#modalChooserGallery4').hide();
+    $('.modal-backdrop').remove();
   });
 
   $('#btn-add-change').on('click', function(e){
