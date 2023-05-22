@@ -172,6 +172,64 @@ class Gallery4 extends \yii\db\ActiveRecord
         }
     }
 
+    public static function changeSingleImageFromBase64($objectPk, $modelClass, $image64, $imgExt, $imgType, $category = null) {
+        $go = GalleryOwner::find()->where([
+            'model' => $modelClass,
+            'owner_id' => $objectPk
+        ])->one();
+        if ($go) {
+            $gallery = Gallery4::findOne($go->gallery_id);
+            if ($gallery) {
+                if ($gallery->category == $category) {
+                    $fileUrl = Yii::$app->basePath."/web/media/".$gallery->name.".".$gallery->ext;
+                    unlink($fileUrl);
+                    if ($go->delete()) {
+                        if ($gallery->delete()) {
+                            $gallery = new Gallery4();
+                            $fileName = $gallery->generateName(32);
+
+                            $gallery->name = $fileName;
+                            $decodedImage = base64_decode($image64);
+                            $fileUrl = Yii::$app->basePath."/web/media/$fileName.$imgExt";
+
+                            $myfile = fopen($fileUrl, "w");
+                            if ($myfile) {
+                                fwrite($myfile, $decodedImage);
+                                $fileSize = filesize($fileUrl);
+                                $gallery->file_size = $fileSize;
+                                $gallery->title = $fileName.".".$imgExt;
+                                $gallery->type = $imgType;
+                                $gallery->ext = $imgExt;
+                                if ($category == null) {
+                                    $gallery->category = "GALLERY4";
+                                }else {
+                                    $gallery->category = $category;
+                                }
+                                $gallery->created_at = date('Y-m-d H:i:s');
+                                if ($gallery->save()) {
+                                    $galleryOwner = new GalleryOwner();
+                                    $galleryOwner->gallery_id = $gallery->primaryKey;
+                                    $galleryOwner->owner_id = strval($objectPk);
+                                    $galleryOwner->model = $modelClass;
+                                    $galleryOwner->created_at = date('Y-m-d H:i:s');
+                                    if ($galleryOwner->save()) {
+                                        $out['data']['id'] = $objectPk;
+                                        $out['data']['url'] = 
+                                            Url::to('@web/media/'.$gallery->title, true);
+                                    }else {
+                                        $out['success'] = false;
+                                        $out['data'] = $galleryOwner->errors;
+                                    }
+                                }
+                                fclose($myfile);
+                            }
+                        }                        
+                    }
+                }
+            }
+        }
+    }
+
     public static function addImageFromAjax($objectPk, $modelClass, $category) {
         $galleryOwner = GalleryOwner::find()->where([
             'owner_id' => $objectPk,
@@ -258,6 +316,11 @@ class Gallery4 extends \yii\db\ActiveRecord
             }else {
                 $gallery->category = $category;
             }
+            if ($category == null) {
+                $gallery->category = "GALLERY4";
+            }else {
+                $gallery->category = $category;
+            }
             $gallery->created_at = date('Y-m-d H:i:s');
             if ($gallery->save()) {
                 if (!$galleryOwner) {
@@ -302,7 +365,7 @@ class Gallery4 extends \yii\db\ActiveRecord
         return $path;
     }
     
-    public static function getImagesPath($objectPk = null, $modelClass = null, $category = null) {
+    public static function getImagesPath($objectPk = null, $modelClass = null, $category = null, $isHttps = false) {
         $imageList = [];
         if ($objectPk) {
             $galleriesOwner = GalleryOwner::find()->where([
@@ -327,7 +390,22 @@ class Gallery4 extends \yii\db\ActiveRecord
 
             if ($gallery) {
                 $fileName = $gallery->name.".".$gallery->ext;
-                $path = Url::to('@web/media/'.$fileName, true);
+                $path = Url::to('@web/media/'.$fileName, false);
+                if ($isHttps) {
+                    $path = "https://".$_SERVER['HTTP_HOST'].$path;
+                }
+                // if (isset($_SERVER['HTTPS']) &&
+                //     ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
+                //     isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+                //     $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+                //     $protocol = 'https://';
+                // }
+                // else {
+                //     $protocol = 'http://';
+                // }
+                // $path = $protocol.$path;
+                // echo $protocol;
+                // die;
                 $imageList[] = $path;
             }
         }

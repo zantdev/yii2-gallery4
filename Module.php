@@ -8,7 +8,6 @@ class Module extends \yii\base\Module
         parent::init();
 
         $this->params['foo'] = 'bar';
-        // ...  other initialization code ...
     }
 }
 ?>
