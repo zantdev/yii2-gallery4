@@ -176,54 +176,62 @@ class Gallery4 extends \yii\db\ActiveRecord
         $go = GalleryOwner::find()->where([
             'model' => $modelClass,
             'owner_id' => $objectPk
-        ])->one();
-        if ($go) {
-            $gallery = Gallery4::findOne($go->gallery_id);
-            if ($gallery) {
-                if ($gallery->category == $category) {
-                    $fileUrl = Yii::$app->basePath."/web/media/".$gallery->name.".".$gallery->ext;
-                    unlink($fileUrl);
-                    if ($go->delete()) {
-                        if ($gallery->delete()) {
-                            $gallery = new Gallery4();
-                            $fileName = $gallery->generateName(32);
+        ])->all();
+        $goID = null;
+        $galleryID = null;
+        foreach ($go as $item) {
+            $gallery = Gallery4::findOne($item->gallery_id);
+            if ($gallery->category == $category) {
+                $galleryID = $item->gallery_id;
+                $goID = $item->id;
+                break;
+            }
+        }
 
-                            $gallery->name = $fileName;
-                            $decodedImage = base64_decode($image64);
-                            $fileUrl = Yii::$app->basePath."/web/media/$fileName.$imgExt";
+        if ($galleryID && $goID) {
+            $gallery = Gallery4::findOne($galleryID);
+            $fileUrl = Yii::$app->basePath."/web/media/".$gallery->name.".".$gallery->ext;
+            unlink($fileUrl);
+            $go = GalleryOwner::findOne($goID);
+            if ($go->delete()) {
+                if ($gallery->delete()) {
+                    $gallery = new Gallery4();
+                    $fileName = $gallery->generateName(32);
 
-                            $myfile = fopen($fileUrl, "w");
-                            if ($myfile) {
-                                fwrite($myfile, $decodedImage);
-                                $fileSize = filesize($fileUrl);
-                                $gallery->file_size = $fileSize;
-                                $gallery->title = $fileName.".".$imgExt;
-                                $gallery->type = $imgType;
-                                $gallery->ext = $imgExt;
-                                if ($category == null) {
-                                    $gallery->category = "GALLERY4";
-                                }else {
-                                    $gallery->category = $category;
-                                }
-                                $gallery->created_at = date('Y-m-d H:i:s');
-                                if ($gallery->save()) {
-                                    $galleryOwner = new GalleryOwner();
-                                    $galleryOwner->gallery_id = $gallery->primaryKey;
-                                    $galleryOwner->owner_id = strval($objectPk);
-                                    $galleryOwner->model = $modelClass;
-                                    $galleryOwner->created_at = date('Y-m-d H:i:s');
-                                    if ($galleryOwner->save()) {
-                                        $out['data']['id'] = $objectPk;
-                                        $out['data']['url'] = 
-                                            Url::to('@web/media/'.$gallery->title, true);
-                                    }else {
-                                        $out['success'] = false;
-                                        $out['data'] = $galleryOwner->errors;
-                                    }
-                                }
-                                fclose($myfile);
+                    $gallery->name = $fileName;
+                    $decodedImage = base64_decode($image64);
+                    $fileUrl = Yii::$app->basePath."/web/media/$fileName.$imgExt";
+
+                    $myfile = fopen($fileUrl, "w");
+                    if ($myfile) {
+                        fwrite($myfile, $decodedImage);
+                        $fileSize = filesize($fileUrl);
+                        $gallery->file_size = $fileSize;
+                        $gallery->title = $fileName.".".$imgExt;
+                        $gallery->type = $imgType;
+                        $gallery->ext = $imgExt;
+                        if ($category == null) {
+                            $gallery->category = "GALLERY4";
+                        }else {
+                            $gallery->category = $category;
+                        }
+                        $gallery->created_at = date('Y-m-d H:i:s');
+                        if ($gallery->save()) {
+                            $galleryOwner = new GalleryOwner();
+                            $galleryOwner->gallery_id = $gallery->primaryKey;
+                            $galleryOwner->owner_id = strval($objectPk);
+                            $galleryOwner->model = $modelClass;
+                            $galleryOwner->created_at = date('Y-m-d H:i:s');
+                            if ($galleryOwner->save()) {
+                                $out['data']['id'] = $objectPk;
+                                $out['data']['url'] = 
+                                    Url::to('@web/media/'.$gallery->title, true);
+                            }else {
+                                $out['success'] = false;
+                                $out['data'] = $galleryOwner->errors;
                             }
-                        }                        
+                        }
+                        fclose($myfile);
                     }
                 }
             }
@@ -271,9 +279,6 @@ class Gallery4 extends \yii\db\ActiveRecord
                 'downloadUrl' => $fileUrl,
             ];
         }else {
-            echo '<pre>';
-            print_r($gallery);
-            die;
             return [
                 'success' => false,
                 'message' => 'Upload data is fail'
