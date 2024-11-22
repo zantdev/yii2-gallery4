@@ -418,6 +418,54 @@ class Gallery4 extends \yii\db\ActiveRecord
         return $imageList;
     }
 
+    public static function getImagesPathInfo($objectPk = null, $modelClass = null, $category = null, $isHttps = false) {
+        $imageList = [];
+        if ($objectPk) {
+            $galleriesOwner = GalleryOwner::find()->where([
+                'owner_id' => $objectPk,
+                'model' => $modelClass
+                ])->all();
+        }else {
+            $galleriesOwner = GalleryOwner::find()->where([
+                'model' => $modelClass
+                ])->all();
+        }
+        
+        foreach ($galleriesOwner as $item) {
+            if ($category) {
+                $gallery = Gallery4::find()->where([
+                    'category' => $category, 'id' => $item->gallery_id])->one();
+                
+            }else {
+                $gallery = Gallery4::find()->where([
+                    'id' => $item->gallery_id])->one();
+            }
+
+            if ($gallery) {
+                $fileName = $gallery->name.".".$gallery->ext;
+                $path = Url::to('@web/media/'.$fileName, false);
+                if ($isHttps) {
+                    $path = "https://".$_SERVER['HTTP_HOST'].$path;
+                }
+                $item = [
+                    'id' => $item->id,
+                    'path' => $path,
+                    'name' => $gallery->name,
+                    'file_size' => $gallery->file_size,
+                    'title' => $gallery->title,
+                    'type' => $gallery->type,
+                    'category' => $gallery->category,
+                    'ext' => $gallery->ext,
+                    'description' => $gallery->description
+                    
+                ];
+                $imageList[] = $item;
+            }
+        }
+
+        return $imageList;
+    }
+
     public function getGo() {
         return $this->hasMany(GalleryOwner::className(), ['gallery_id' => 'id']);
     }
